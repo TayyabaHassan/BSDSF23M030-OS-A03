@@ -2,29 +2,32 @@
 #define SHELL_H
 
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 
-#define MAX_LEN 512
-#define MAXARGS 10
-#define ARGLEN 30
-#define PROMPT "FCIT> "
+#define MAX_LEN 1024
+#define MAXARGS 64
+#define ARGLEN  64
+#define PROMPT  "FCIT> "
 #define HISTORY_SIZE 20
-// Function prototypes
 
+// Global variables
 extern char* history[HISTORY_SIZE];
 extern int history_count;
+
+// Function prototypes
 void add_to_history(const char* cmd);
 void show_history();
 
-// Function prototypes
 char* read_cmd(char* prompt, FILE* fp);
 char** tokenize(char* cmdline);
-int execute(char** arglist);
-int handle_builtin(char **arglist);
+int execute(char* arglist[]);
+int handle_builtin(char** arglist);
 
 #endif // SHELL_H

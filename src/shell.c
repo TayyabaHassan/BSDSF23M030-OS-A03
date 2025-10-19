@@ -3,28 +3,27 @@
 #include <string.h>   // for strcmp()
 #include <stdlib.h>   // for exit()
 #include <stdio.h>    // for printf()
+#include <readline/readline.h>
+#include <readline/history.h>
 char* history[HISTORY_SIZE];
 int history_count = 0;
 
 char* read_cmd(char* prompt, FILE* fp) {
-    printf("%s", prompt);
-    char* cmdline = (char*) malloc(sizeof(char) * MAX_LEN);
-    int c, pos = 0;
+    // readline handles prompt display and editing
+    char* input = readline(prompt);
 
-    while ((c = getc(fp)) != EOF) {
-        if (c == '\n') break;
-        cmdline[pos++] = c;
+    if (input == NULL) { // Ctrl+D (EOF)
+        return NULL;
+
     }
 
-    if (c == EOF && pos == 0) {
-        free(cmdline);
-        return NULL; // Handle Ctrl+D
+    // Add non-empty commands to Readline’s internal history
+    if (*input) {
+        add_history(input);
     }
-    
-    cmdline[pos] = '\0';
-    return cmdline;
+
+    return input;
 }
-
 char** tokenize(char* cmdline) {
     // Edge case: empty command line
     if (cmdline == NULL || cmdline[0] == '\0' || cmdline[0] == '\n') {
@@ -38,34 +37,53 @@ char** tokenize(char* cmdline) {
     }
 
     char* cp = cmdline;
-    char* start;
-    int len;
     int argnum = 0;
 
     while (*cp != '\0' && argnum < MAXARGS) {
-        while (*cp == ' ' || *cp == '\t') cp++; // Skip leading whitespace
-        
-        if (*cp == '\0') break; // Line was only whitespace
+        // Skip whitespace
+        while (*cp == ' ' || *cp == '\t')
+            cp++;
 
-        start = cp;
-        len = 1;
-        while (*++cp != '\0' && !(*cp == ' ' || *cp == '\t')) {
-            len++;
+        if (*cp == '\0')
+            break;
+
+        // Handle special single-character tokens
+        if (*cp == '<' || *cp == '>' || *cp == '|') {
+            arglist[argnum][0] = *cp;
+            arglist[argnum][1] = '\0';
+            argnum++;
+            cp++;  // move past the special symbol
+            continue;
         }
+
+        // Handle normal words
+        char* start = cp;
+        int len = 0;
+        while (*cp != '\0' && *cp != ' ' && *cp != '\t'
+               && *cp != '<' && *cp != '>' && *cp != '|') {
+            len++;
+            cp++;
+        }
+
         strncpy(arglist[argnum], start, len);
         arglist[argnum][len] = '\0';
         argnum++;
     }
 
-    if (argnum == 0) { // No arguments were parsed
-        for(int i = 0; i < MAXARGS + 1; i++) free(arglist[i]);
+    arglist[argnum] = NULL;
+
+    if (argnum == 0) {
+        for (int i = 0; i < MAXARGS + 1; i++)
+            free(arglist[i]);
         free(arglist);
         return NULL;
     }
 
-    arglist[argnum] = NULL;
     return arglist;
 }
+
+
+
 #include <string.h>
 
 void add_to_history(const char* cmd) {
