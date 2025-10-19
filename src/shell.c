@@ -3,6 +3,8 @@
 #include <string.h>   // for strcmp()
 #include <stdlib.h>   // for exit()
 #include <stdio.h>    // for printf()
+char* history[HISTORY_SIZE];
+int history_count = 0;
 
 char* read_cmd(char* prompt, FILE* fp) {
     printf("%s", prompt);
@@ -64,6 +66,32 @@ char** tokenize(char* cmdline) {
     arglist[argnum] = NULL;
     return arglist;
 }
+#include <string.h>
+
+void add_to_history(const char* cmd) {
+    if (cmd == NULL || strlen(cmd) == 0) return;
+
+    // Duplicate command string
+    char* copy = strdup(cmd);
+
+    // If history full, free oldest and shift everything up
+    if (history_count == HISTORY_SIZE) {
+        free(history[0]);
+        for (int i = 1; i < HISTORY_SIZE; i++) {
+            history[i - 1] = history[i];
+        }
+        history_count--;
+    }
+
+    history[history_count++] = copy;
+}
+
+void show_history() {
+    for (int i = 0; i < history_count; i++) {
+        printf("%d  %s\n", i + 1, history[i]);
+    }
+}
+
 #include <unistd.h>   // for chdir()
 #include <string.h>   // for strcmp()
 #include <stdlib.h>   // for exit()
@@ -107,6 +135,11 @@ int handle_builtin(char **arglist) {
         printf("Job control not yet implemented.\n");
         return 1;
     }
+	else if (strcmp(arglist[0], "history") == 0) {
+    show_history();
+    return 1;
+}
+
 
     return 0; // Not a built-in
 }
