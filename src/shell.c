@@ -1,4 +1,8 @@
 #include "shell.h"
+#include <unistd.h>   // for chdir()
+#include <string.h>   // for strcmp()
+#include <stdlib.h>   // for exit()
+#include <stdio.h>    // for printf()
 
 char* read_cmd(char* prompt, FILE* fp) {
     printf("%s", prompt);
@@ -59,4 +63,50 @@ char** tokenize(char* cmdline) {
 
     arglist[argnum] = NULL;
     return arglist;
+}
+#include <unistd.h>   // for chdir()
+#include <string.h>   // for strcmp()
+#include <stdlib.h>   // for exit()
+#include <stdio.h>    // for printf()
+
+int handle_builtin(char **arglist) {
+    if (arglist[0] == NULL) {
+        return 1; // Empty command
+    }
+
+    // 1. exit
+    if (strcmp(arglist[0], "exit") == 0) {
+        printf("Exiting shell...\n");
+        exit(0); // terminate the shell process
+    }
+
+    // 2. cd
+    else if (strcmp(arglist[0], "cd") == 0) {
+        if (arglist[1] == NULL) {
+            fprintf(stderr, "cd: expected argument\n");
+        } else {
+            if (chdir(arglist[1]) != 0) {
+                perror("cd failed");
+            }
+        }
+        return 1;
+    }
+
+    // 3. help
+    else if (strcmp(arglist[0], "help") == 0) {
+        printf("FCIT Shell - Built-in commands:\n");
+        printf("  cd <dir>   - Change directory\n");
+        printf("  exit       - Exit the shell\n");
+        printf("  help       - Display this help message\n");
+        printf("  jobs       - Show background jobs (not implemented yet)\n");
+        return 1;
+    }
+
+    // 4. jobs (placeholder)
+    else if (strcmp(arglist[0], "jobs") == 0) {
+        printf("Job control not yet implemented.\n");
+        return 1;
+    }
+
+    return 0; // Not a built-in
 }
