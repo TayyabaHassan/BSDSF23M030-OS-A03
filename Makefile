@@ -1,6 +1,7 @@
 # Simple Makefile for the starter shell
 CC := gcc
 CFLAGS := -Wall -Wextra -g -Iinclude
+LDFLAGS := -lreadline 
 SRCDIR := src
 OBJDIR := obj
 BINDIR := bin
@@ -26,7 +27,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
 
 # link
 $(TARGET): $(OBJECTS) | $(BINDIR)
-	$(CC) $(CFLAGS) $(OBJECTS) -o $(TARGET)
+	$(CC) $(CFLAGS) $(OBJECTS) -o $(TARGET) $(LDFLAGS)
 
 clean:
 	rm -f $(OBJDIR)/*.o
